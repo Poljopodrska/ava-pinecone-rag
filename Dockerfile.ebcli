@@ -1,0 +1,9 @@
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y git && \
+    pip install awsebcli && \
+    apt-get clean
+
+WORKDIR /app
+
+ENTRYPOINT ["eb"]

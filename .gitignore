@@ -5,3 +5,8 @@ __pycache__/
 *.log 
 .DS_Store 
 folder_structure.txt 
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
