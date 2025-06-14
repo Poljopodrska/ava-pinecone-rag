@@ -44,13 +44,20 @@ rag_chain = None
 
 if RUN_RAG:
     try:
-        from pinecone import Pinecone
-        from langchain_pinecone import PineconeVectorStore
+        import pinecone
+        from langchain.vectorstores import Pinecone as LangchainPinecone
+        from langchain.embeddings.openai import OpenAIEmbeddings
 
-        pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-        index = pc.Index(os.getenv("PINECONE_INDEX_NAME"))
+        env_name = os.getenv("PINECONE_ENVIRONMENT")
+        print(f"[DEBUG] PINECONE_ENVIRONMENT = {env_name}")
+
+        pinecone.init(
+            api_key=os.getenv("PINECONE_API_KEY"),
+            environment=env_name
+        )
+        index = pinecone.Index(os.getenv("PINECONE_INDEX_NAME"))
         embeddings = OpenAIEmbeddings()
-        vectorstore = PineconeVectorStore(index=index, embedding=embeddings, text_key="text")
+        vectorstore = LangchainPinecone(index=index, embedding=embeddings, text_key="text")
         retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 15})
         rag_chain = RetrievalQA.from_chain_type(llm=llm_sql, retriever=retriever, return_source_documents=False)
 
