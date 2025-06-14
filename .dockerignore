@@ -1,0 +1,12 @@
+Dockerfile.ebcli
+venv
+ebcli-env
+eb-env
+*.pyc
+__pycache__/
+.git
+.gitignore
+*.md
+*.zip
+*.pem
+.env
