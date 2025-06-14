@@ -1,7 +1,7 @@
 import os
 import re
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, text
+# from sqlalchemy import create_engine, text  # COMMENTED OUT
 
 from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
 from langchain_community.agent_toolkits.sql.base import create_sql_agent
@@ -21,23 +21,23 @@ print(f"[DEBUG] Using DB URL: {DATABASE_URL}")
 print(f"[DEBUG] RAG enabled: {RUN_RAG}")
 
 # === SQL Agent Setup ===
-engine = create_engine(DATABASE_URL)
-db = SQLDatabase(engine)
+# engine = create_engine(DATABASE_URL)  # COMMENTED OUT
+# db = SQLDatabase(engine)  # COMMENTED OUT
 
 llm_sql = ChatOpenAI(temperature=0, model="gpt-4o")
 llm_friendly = ChatOpenAI(temperature=0.5, model="gpt-4o")
 
 schema_description = """..."""  # Replace with your schema description
 
-sql_toolkit = SQLDatabaseToolkit(db=db, llm=llm_sql)
-sql_agent_executor = create_sql_agent(
-    llm=llm_sql,
-    toolkit=sql_toolkit,
-    agent_type=AgentType.OPENAI_FUNCTIONS,
-    verbose=True,
-    prefix=schema_description,
-    agent_executor_kwargs={"handle_parsing_errors": True}
-)
+# sql_toolkit = SQLDatabaseToolkit(db=db, llm=llm_sql)  # COMMENTED OUT
+# sql_agent_executor = create_sql_agent(
+#     llm=llm_sql,
+#     toolkit=sql_toolkit,
+#     agent_type=AgentType.OPENAI_FUNCTIONS,
+#     verbose=True,
+#     prefix=schema_description,
+#     agent_executor_kwargs={"handle_parsing_errors": True}
+# )  # COMMENTED OUT
 
 # === Optional RAG Setup ===
 rag_chain = None
@@ -53,7 +53,8 @@ if RUN_RAG:
 
         pinecone.init(
             api_key=os.getenv("PINECONE_API_KEY"),
-            environment=env_name
+            environment=env_name,
+            host=os.getenv("PINECONE_HOST")  # <-- Add this line
         )
         index = pinecone.Index(os.getenv("PINECONE_INDEX_NAME"))
         embeddings = OpenAIEmbeddings()
@@ -111,20 +112,23 @@ def ask_agent(question: str) -> str:
 
         except Exception as e:
             print(f"[ERROR] RAG error: {e}")
-            try:
-                with engine.connect() as conn:
-                    conn.execute(
-                        text("INSERT INTO unanswered_questions (question, error_message) VALUES (:q, :e)"),
-                        {"q": question, "e": str(e)}
-                    )
-            except Exception as db_err:
-                print(f"[ERROR] Failed to log error to DB: {db_err}")
+            # Disabled DB logging here
+            # try:
+            #     with engine.connect() as conn:
+            #         conn.execute(
+            #             text("INSERT INTO unanswered_questions (question, error_message) VALUES (:q, :e)"),
+            #             {"q": question, "e": str(e)}
+            #         )
+            # except Exception as db_err:
+            #     print(f"[ERROR] Failed to log error to DB: {db_err}")
             return "I'll provide the answer in a short time."
 
     else:
         print("[ASK_AGENT] Routing to SQL agent...")
-        try:
-            return sql_agent_executor.run(question)
-        except Exception as e:
-            print(f"[ERROR] SQL Agent failed: {e}")
-            return "Sorry, I couldn't find the answer right now."
+        # Commented out because no DB
+        # try:
+        #     return sql_agent_executor.run(question)
+        # except Exception as e:
+        #     print(f"[ERROR] SQL Agent failed: {e}")
+        #     return "Sorry, I couldn't find the answer right now."
+        return "SQL agent is disabled currently."

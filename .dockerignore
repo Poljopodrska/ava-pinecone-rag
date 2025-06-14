@@ -10,3 +10,6 @@ __pycache__/
 *.zip
 *.pem
 .env
+aws/
+awscliv2.zip
+docs/
